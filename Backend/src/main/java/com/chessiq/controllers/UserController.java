@@ -56,4 +56,43 @@ public class UserController {
     public ResponseEntity<String> logoutUser() {
         return ResponseEntity.ok("User logged out successfully!");
     }
+
+    @PostMapping("/request-password-reset")
+    public ResponseEntity<?> requestPasswordReset(@RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
+        Optional<User> userOpt = userRepository.findByEmail(email);
+
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+
+        String token = UUID.randomUUID().toString();
+        PasswordResetToken resetToken = new PasswordResetToken(token, userOpt.get());
+        passwordResetTokenRepository.save(resetToken);
+
+        String resetLink = "http://localhost:3000/reset-password?token=" + token;
+        emailService.send(email, "Reset your password using this link: " + resetLink);
+
+        return ResponseEntity.ok("Password reset link sent.");
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> payload) {
+        String token = payload.get("token");
+        String newPassword = payload.get("newPassword");
+
+        Optional<PasswordResetToken> tokenOpt = passwordResetTokenRepository.findByToken(token);
+
+        if (tokenOpt.isEmpty() || tokenOpt.get().getExpiration().isBefore(LocalDateTime.now())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid or expired token.");
+        }
+
+        User user = tokenOpt.get().getUser();
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        passwordResetTokenRepository.delete(tokenOpt.get());
+
+        return ResponseEntity.ok("Password successfully reset.");
+    }
+
 }
