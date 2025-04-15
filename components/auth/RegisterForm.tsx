@@ -15,11 +15,29 @@ export default function RegisterForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+
     try {
-      await signUp(email, password);
-      router.push('/dashboard');
-    } catch (err: any) {
-      setError(err.message || 'Failed to register');
+      const res = await fetch('http://localhost:8080/api/users/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+
+      if (res.ok) {
+        router.push('/login'); // or /dashboard if you auto-login after registration
+      } else {
+        const data = await res.json();
+        setError(data.message || 'Failed to register');
+      }
+      } catch (err: any) {
+        console.error('Registration error:', err);
+        setError('Something went wrong. Please try again.');
     }
   };
 
