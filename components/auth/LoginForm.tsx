@@ -18,10 +18,32 @@ export default function LoginForm() {
     e.preventDefault();
     setError('');
     setLoading(true);
-
+  
     try {
-      await signIn(email, password);
-      router.push('/dashboard');
+      // Send request to backend API
+      const response = await fetch('http://localhost:8080/api/users/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+  
+      // Log the response text
+      const responseText = await response.text();
+      console.log('Response Text:', responseText);
+  
+      if (!response.ok) {
+        throw new Error('Failed to sign in');
+      }
+  
+      // Check if the response is the expected success message
+      if (responseText === 'Login successful!') {
+        router.push('/dashboard');
+      } else {
+        // Handle unexpected responses
+        throw new Error('Unexpected response from server');
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to sign in');
     } finally {
