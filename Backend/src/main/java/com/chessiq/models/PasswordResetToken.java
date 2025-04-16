@@ -1,4 +1,4 @@
-package com.chessiq.model;
+package com.chessiq.models;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -24,4 +24,19 @@ public class PasswordResetToken {
         this.expiration = LocalDateTime.now().plusMinutes(30);
     }
 
+    public String getToken() {
+        return token;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public LocalDateTime getExpiration() {
+        return expiration;
+    }
+
+    public void setExpiration(LocalDateTime expiration) {
+        this.expiration = expiration;
+    }
 }

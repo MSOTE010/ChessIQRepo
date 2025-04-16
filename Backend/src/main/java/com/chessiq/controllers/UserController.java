@@ -1,28 +1,39 @@
 package com.chessiq.controllers;
 
+import com.chessiq.models.PasswordResetToken;
 import com.chessiq.repository.UserRepository;
+import com.chessiq.repository.PasswordResetTokenRepository;
 import com.chessiq.dto.LoginDTO;
 import com.chessiq.dto.UserDTO;
 import com.chessiq.models.User;
 
 import com.chessiq.services.UserService;
+import com.chessiq.services.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
 
     private final UserRepository userRepository;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final EmailService emailService;
 
     @Autowired
     private UserService userService;
 
-    public UserController(UserRepository userRepository) {
+    public UserController(UserRepository userRepository,  PasswordResetTokenRepository passwordResetTokenRepository,
+                          EmailService emailService) {
         this.userRepository = userRepository;
+        this.passwordResetTokenRepository = passwordResetTokenRepository;
+        this.emailService = emailService;
     }
 
     @PostMapping("/register")
@@ -88,11 +99,12 @@ public class UserController {
         }
 
         User user = tokenOpt.get().getUser();
-        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setPassword(newPassword);
         userRepository.save(user);
         passwordResetTokenRepository.delete(tokenOpt.get());
 
         return ResponseEntity.ok("Password successfully reset.");
     }
+
 
 }

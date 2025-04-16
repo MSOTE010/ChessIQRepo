@@ -1,6 +1,6 @@
 package com.chessiq.repository;
 
-import com.chessiq.model.PasswordResetToken;
+import com.chessiq.models.PasswordResetToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
